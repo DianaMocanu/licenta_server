@@ -29,7 +29,7 @@ def oauth_verify(*args, **kwargs):
 
 @app.route('/query', methods=['POST'])
 @cross_origin()
-def generateQueryy():
+def generateQuery():
 
     request_json = request.get_json()
     Data = request_json['Data']
@@ -39,6 +39,18 @@ def generateQueryy():
     response = jsonify(result)
     return response
 
+@app.route('/execute', methods=['POST'])
+@cross_origin()
+def executeQuery():
+
+    request_json = request.get_json()
+    Data = request_json['Data']
+    database = Data['database']
+    query = Data['query']
+    result, columns = service.executeQuery(query, database)
+    dataToSend = {'results': result, 'columns': columns}
+    response = jsonify(dataToSend)
+    return response
 
 if __name__ == '__main__':
     app.run()
