@@ -1,6 +1,3 @@
-import mysql.connector
-from mysql import connector
-from mysql.connector import Error
 import numpy as np
 
 from src.database.Query import Query
@@ -12,15 +9,16 @@ class Connect:
             self.tags = []
 
 
-
         def createLearningSets(self, query):
             self.tags = []
             result = np.array(query.executeQuery())
             self.field_names = query.field_names
+            newNegate = query.negateQueryRandom(len(result), 1)
+            print("Negate size: " + str(len(newNegate)) + " Positive size: "  + str(len(result)))
             res = self.addTagToArray(np.array(result), 0)
-            negQ = np.array(query.negateQuery2())
+            negQ = np.array(newNegate)
             negate = self.addTagToArray(negQ, 1)
-            return np.concatenate((np.array(result), negQ))
+            return np.concatenate((np.array(result), negQ)), result
 
         def addTagToArray(self, elems , tag):
             newArray = []

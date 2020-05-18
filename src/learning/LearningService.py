@@ -22,7 +22,7 @@ class LearningService:
         estimator.fit(self.data, self.target)
         plot_tree(estimator, filled=True)
         plt.show()
-        estimator.predict(self.restTuples)
+        # print(estimator.predict(self.restTuples))
         # plt.show()
         self.conditions = []
         self.tree = estimator.tree_
@@ -61,6 +61,6 @@ class LearningService:
     def generateConditionsQuery(self):
         self.initialize()
         self.recurse2(0,1,"")
-        disjCond = self.calculateCondition(self.conditions)
-        self.conditions.append(disjCond)
+        # disjCond = self.calculateCondition(self.conditions)
+        # self.conditions.append(disjCond)
         return self.conditions

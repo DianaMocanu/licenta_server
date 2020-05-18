@@ -48,8 +48,19 @@ def executeQuery():
     database = Data['database']
     query = Data['query']
     result, columns = service.executeQuery(query, database)
+    print("Result size" + str(len(result)))
     dataToSend = {'results': result, 'columns': columns}
     response = jsonify(dataToSend)
+    return response
+
+@app.route('/tables', methods=['GET', 'POST'])
+@cross_origin()
+def getTables():
+    request_json = request.get_json()
+    Data = request_json['Data']
+    database = Data['database']
+    result = service.getTablesDatabase(database)
+    response = jsonify(result)
     return response
 
 if __name__ == '__main__':
