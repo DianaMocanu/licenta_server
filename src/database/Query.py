@@ -14,7 +14,7 @@ class Query:
             self.connect()
 
         def connect(self):
-            try:
+            # try:
                 self.connection = connector.connect(host='localhost',
                                                database=self.database,
                                                user=self.user,
@@ -23,19 +23,19 @@ class Query:
                 )
 
                 self.cursor = self.connection.cursor()
-            except Error as e:
-                print("Error while connecting to MySQL", e)
+            # except Error as e:
+            #     print("Error while connecting to MySQL", e)
 
         def executeQuery(self):
-                try:
+                # try:
                     self.cursor.execute(self.query)
                     self.field_names = [i[0] for i in self.cursor.description]
                     result = self.cursor.fetchall()
                     return result
 
-                except Error as msg:
-                    print(
-                    "Command skipped: ", msg)
+                # except Error as msg:
+                #     print(
+                #     "Command skipped: ", msg)
 
         def negateQuery(self, query):
 

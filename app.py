@@ -3,6 +3,7 @@ from flask import request
 from flask import after_this_request
 from src.Service import Service
 from flask_cors import CORS, cross_origin
+from mysql.connector import Error
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -19,7 +20,6 @@ service = Service()
 #   return response
 
 
-
 @app.before_request
 def oauth_verify(*args, **kwargs):
     """Ensure the oauth authorization header is set"""
@@ -30,28 +30,34 @@ def oauth_verify(*args, **kwargs):
 @app.route('/query', methods=['POST'])
 @cross_origin()
 def generateQuery():
-
     request_json = request.get_json()
     Data = request_json['Data']
     database = Data['database']
     query = Data['query']
-    result = service.getQueryAlternativeConditions(query, database)
-    response = jsonify(result)
-    return response
+    try:
+        result = service.getQueryAlternativeConditions(query, database)
+        response = jsonify(result)
+        return response
+    except Error as n:
+        return n.msg, 209
+
 
 @app.route('/execute', methods=['POST'])
 @cross_origin()
 def executeQuery():
-
     request_json = request.get_json()
     Data = request_json['Data']
     database = Data['database']
     query = Data['query']
-    result, columns = service.executeQuery(query, database)
-    print("Result size" + str(len(result)))
-    dataToSend = {'results': result, 'columns': columns}
-    response = jsonify(dataToSend)
-    return response
+    try:
+        result, columns = service.executeQuery(query, database)
+        print("Result size" + str(len(result)))
+        dataToSend = {'results': result, 'columns': columns}
+        response = jsonify(dataToSend)
+        return response
+    except Error as n:
+        return n.msg, 209
+
 
 @app.route('/tables', methods=['GET', 'POST'])
 @cross_origin()
@@ -59,9 +65,20 @@ def getTables():
     request_json = request.get_json()
     Data = request_json['Data']
     database = Data['database']
-    result = service.getTablesDatabase(database)
-    response = jsonify(result)
-    return response
+    try:
+        result = service.getTablesDatabase(database)
+        response = jsonify(result)
+        return response
+    except Error as n:
+        return n.msg, 209
+
+
+# @app.errorhandler(500)
+# @cross_origin()
+# def internal_error(error):
+#     print(error)
+#     return jsonify(error), 201
+
 
 if __name__ == '__main__':
     app.run()
