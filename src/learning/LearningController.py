@@ -3,7 +3,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.tree import _tree
 
 
-class LearningService:
+class LearningController:
 
     def __init__(self,  X, Y, feature_names, target_names, rest):
 

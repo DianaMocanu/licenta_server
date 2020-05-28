@@ -3,7 +3,7 @@ import numpy as np
 from src.database.Query import Query
 
 
-class Connect:
+class DataController:
 
         def __init__(self):
             self.tags = []
@@ -11,14 +11,20 @@ class Connect:
 
         def createLearningSets(self, query):
             self.tags = []
-            result = np.array(query.executeQuery())
+            positive_result = np.array(query.executeQuery())
+            positive_length = len(positive_result)
             self.field_names = query.field_names
-            newNegate = query.negateQueryRandom(len(result), 1)
-            print("Negate size: " + str(len(newNegate)) + " Positive size: "  + str(len(result)))
-            res = self.addTagToArray(np.array(result), 0)
-            negQ = np.array(newNegate)
-            negate = self.addTagToArray(negQ, 1)
-            return np.concatenate((np.array(result), negQ)), result
+            negative_result = query.negateQueryRandom(positive_length, 15, 254)
+            negative_length = len(negative_result)
+            print("Negate size: " + str(negative_length) + " Positive size: "  + str(positive_length))
+            self.addToTag(positive_length, 0)
+            self.addToTag(negative_length, 1)
+            return np.concatenate((np.array(positive_result), np.array(negative_result))), positive_result
+
+
+        def addToTag(self, size, tag):
+            tagsToAdd = [tag] * size
+            self.tags += tagsToAdd
 
         def addTagToArray(self, elems , tag):
             newArray = []
@@ -26,7 +32,6 @@ class Connect:
                 elem = np.append(elem, tag)
                 self.tags.append(tag)
                 newArray.append(elem)
-            # arr = np.array(newArray)
             return np.array(newArray)
 
         def getNextNegated(self, query, database):

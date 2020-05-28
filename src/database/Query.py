@@ -55,9 +55,11 @@ class Query:
             res = self.cursor.fetchall()
             return res
 
-        def negateQueryRandom(self, number, i):
+        def negateQueryRandom(self, number, i, total_size):
             selectPart, wherePart = self.deconstructQuery()
-            randPart = "ORDER BY RAND() LIMIT " + str(number)
+            n = i/100 * (total_size - number)
+            print(n)
+            randPart = "ORDER BY RAND() LIMIT " + str(int(round(n)))
             newQuery = selectPart + " not( " + wherePart + " )" + randPart
             self.cursor.execute(newQuery)
             result = self.cursor.fetchall()

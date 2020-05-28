@@ -7,7 +7,7 @@ class DatabaseMethods:
         self.user = "root"
         self.password = 'Dulciurile25'
 
-    def connect(self):
+    def getDatabases(self):
 
         conn = mysql.connector.connect (user=self.user, password=self.password,
                                    host='localhost',buffered=True)
@@ -22,6 +22,17 @@ class DatabaseMethods:
                                        host='localhost', database= database, buffered=True)
         cursor = conn.cursor()
         databases = ("show tables")
+        cursor.execute(databases)
+        result = []
+        for (databases) in cursor:
+            result.append(databases[0])
+        return result
+
+    def getColumns(self, database, table):
+        conn = mysql.connector.connect(user=self.user, password=self.password,
+                                       host='localhost', database= database, buffered=True)
+        cursor = conn.cursor()
+        databases = ("show columns from " + table)
         cursor.execute(databases)
         result = []
         for (databases) in cursor:
