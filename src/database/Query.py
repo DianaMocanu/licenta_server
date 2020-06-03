@@ -2,6 +2,9 @@ import mysql.connector
 from mysql import connector
 from mysql.connector import Error
 import numpy as np
+import re
+from itertools import combinations
+from itertools import combinations_with_replacement
 
 class Query:
 
@@ -58,13 +61,41 @@ class Query:
         def negateQueryRandom(self, number, i, total_size):
             selectPart, wherePart = self.deconstructQuery()
             n = i/100 * (total_size - number)
+            n = number
             print(n)
             randPart = "ORDER BY RAND() LIMIT " + str(int(round(n)))
             newQuery = selectPart + " not( " + wherePart + " )" + randPart
             self.cursor.execute(newQuery)
             result = self.cursor.fetchall()
+            self.splitWhereClause(wherePart, number, selectPart)
             return result
 
+
+        def getNumberTuples(self, query):
+            self.cursor.execute(query)
+            return self.cursor.fetchall()
+
+        def splitWhereClause(self, whereClause, number, selectPart):
+            # print(whereClause.split("and"))
+            conditions = re.split("and | or", whereClause)
+            min = 1000000
+            comb = []
+
+            for i in list(range(len(conditions))):
+                # Finds every combination (with replacement) for each object in the list
+                comb.append(combinations(conditions, i + 1))
+
+            comb = [i for row in comb for i in row]
+            for i in range(0, len(comb)):
+                combination = comb[i]
+                if(len(combination) == 1):
+                    print("not( " + combination[0] + ")")
+                else:
+                    for j in range(0, len(combination)):
+                        print("---------------------------------")
+                        print(combination)
+                        print("not( "  + combination[j] + ")", combination[0:j] + combination[j+1:len(combination)])
+            print(comb)
 
         def deconstructQuery(self):
             lower_query = self.query.lower()
@@ -72,6 +103,7 @@ class Query:
             selectPart = self.query[:idx + 5]
             wherePart = self.query[idx + 5:]
             return selectPart, wherePart
+
 
         def negateQuery2(self):
             lower_query = self.query.lower()

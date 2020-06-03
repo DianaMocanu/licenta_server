@@ -16,7 +16,7 @@ def oauth_verify(*args, **kwargs):
         return
 
 
-@app.route('/query', methods=['POST'])
+@app.route('/generate', methods=['POST'])
 @cross_origin()
 def generateQuery():
     request_json = request.get_json()
