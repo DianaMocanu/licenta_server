@@ -11,6 +11,7 @@ class DataController:
 
         def createLearningSets(self, query):
             self.tags = []
+            query.negateQueryRandom(13, 15, 254)
             positive_result = np.array(query.executeQuery())
             positive_length = len(positive_result)
             self.field_names = query.field_names
