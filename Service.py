@@ -23,9 +23,11 @@ def generateQuery():
     Data = request_json['Data']
     database = Data['database']
     query = Data['query']
+    negation = Data['negation']
     try:
-        result = service.getQueryAlternativeConditions(query, database)
-        response = jsonify(result)
+        result, oldSize = service.getQueryAlternativeConditions(query, database, negation)
+        dataToSend = {'results': result, 'oldSize': oldSize}
+        response = jsonify(dataToSend)
         return response
     except Error as n:
         return n.msg, 209

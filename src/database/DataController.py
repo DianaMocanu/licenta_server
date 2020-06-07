@@ -9,13 +9,17 @@ class DataController:
             self.tags = []
 
 
-        def createLearningSets(self, query):
+        def createLearningSets(self, query, negation):
             self.tags = []
             query.negateQueryRandom(13, 15, 254)
             positive_result = np.array(query.executeQuery())
             positive_length = len(positive_result)
             self.field_names = query.field_names
-            negative_result = query.negateQueryRandom(positive_length, 15, 254)
+            if negation == 1:
+                negative_result = query.negateQueryRandom(positive_length, 15, 254)
+            else:
+                negative_result = query.negateQueryCombinationsN(positive_length)
+
             negative_length = len(negative_result)
             print("Negate size: " + str(negative_length) + " Positive size: "  + str(positive_length))
             self.addToTag(positive_length, 0)

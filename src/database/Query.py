@@ -62,67 +62,105 @@ class Query:
 
     def negateQueryRandom(self, number, i, total_size):
         selectPart, wherePart = self.deconstructQuery()
-        self.splitWhereClause(wherePart, number, selectPart)
+        # print(self.constructQueryGreedy(wherePart, number, selectPart))
         n = i / 100 * (total_size - number)
         n = number
-        print(n)
         randPart = "ORDER BY RAND() LIMIT " + str(int(round(n)))
         newQuery = selectPart + " not( " + wherePart + " )" + randPart
-        self.cursor.execute(newQuery)
-        result = self.cursor.fetchall()
+        result = self.getTuples(newQuery)
         return result
+
+
+    def negateQueryCombinationsN(self, number):
+        selectPart, wherePart = self.deconstructQuery()
+        conditions = re.split("and | or", wherePart)
+        return self.condCombN(conditions, selectPart, number)
+
 
     def getTuples(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def splitWhereClause(self, whereClause):
-        # print(whereClause.split("and"))
-        conditions = re.split("and | or", whereClause)
-        comb = []
 
-        for i in list(range(len(conditions))):
-            # Finds every combination (with replacement) for each object in the list
-            comb.append(combinations(conditions, i + 1))
-        comb = [i for row in comb for i in row]
-        possibleNegations = []
-        for i in range(0, len(comb)):
-            combination = comb[i]
-            if len(combination) == 1:
-                possibleNegations.append("not( " + combination[0] + ")")
-            else:
-                for j in range(0, len(combination)):
-                    possibleNegations.append(
-                        ["not( " + combination[j] + ")", combination[0:j], combination[j + 1:len(combination)]])
+    def condCombN(self, conditions, selectPart, length):
+        n = len(conditions)
+        minDif = np.Inf
+        resultedTuples = []
+        for i in range(1, np.power(2,n)):
+            negatedCondition = []
+            b = '{0:b}'.format(i)
+            binaryNumber = b.zfill(n)
+            binary = [int(x) for x in list(binaryNumber)]
+            for i in range(0, n):
+                digit = binary[i]
+                if  digit:
+                    negatedCondition.append(" not( " + conditions[i] +")")
+                else:
+                    negatedCondition.append(conditions[i])
 
-        return possibleNegations
+            newCond = self.constructCondition(negatedCondition)
+            newQuery = selectPart + " " + newCond
+            tuples = self.getTuples(newQuery)
+            difference = abs(length - len(tuples))
+            if difference < minDif and len(tuples) > 0:
+                minDif = difference
+                resultedTuples = tuples
+
+        return resultedTuples
+
+
+    # def splitWhereClause(self, whereClause):
+    #     # print(whereClause.split("and"))
+    #     conditions = re.split("and | or", whereClause)
+    #     comb = []
+    #
+    #     #get combinations of all conditions
+    #     for i in list(range(len(conditions))):
+    #         comb.append(combinations(conditions, i + 1))
+    #     comb = [i for row in comb for i in row]
+    #
+    #     possibleNegations = []
+    #
+    #     for i in range(0, len(comb)):
+    #         combination = comb[i]
+    #         if len(combination) == 1:
+    #             possibleNegations.append(["not( " + combination[0] + ")"])
+    #         else:
+    #
+    #             for j in range(0, len(combination)):
+    #                 possibleNegations.append(
+    #                     ["not( " + combination[j] + ")", combination[0:j], combination[j + 1:len(combination)]])
+    #
+    #
+    #     return possibleNegations
 
     def constructCondition(self, conditions):
-        finalCond = ["and" + cond for cond in conditions]
+        finalCond = "and ".join(conditions)
         return finalCond
 
-    def constructQueryGreedy(self, whereClause, number, selectPart):
-        minDif = np.Inf
-        finalCondition = ""
-        possibleNegations = self.splitWhereClause(whereClause)
-        for condition in possibleNegations:
-            if len(condition) == 1:
-                newQuery = selectPart + "where " + condition
-                results = len(self.getTuples(newQuery))
-                absDiff = np.abs([number - results, results - number])
-                if minDif > absDiff:
-                    minDif = absDiff
-                    finalCondition = condition
-            else:
-                cond = self.constructCondition(condition)
-                newQuery = selectPart + "where " + cond
-                results = len(self.getTuples(newQuery))
-                absDiff = np.abs([number - results, results - number])
-                if minDif > absDiff:
-                    minDif = absDiff
-                    finalCondition = cond
-
-        return finalCondition
+    # def constructQueryGreedy(self, whereClause, number, selectPart):
+    #     minDif = np.Inf
+    #     finalQuery= ""
+    #     possibleNegations = self.splitWhereClause(whereClause)
+    #     for condition in possibleNegations:
+    #         if len(condition) == 1:
+    #             newQuery = selectPart + " " + condition[0]
+    #             results = len(self.getTuples(newQuery))
+    #             absDiff = results - number
+    #             if minDif > absDiff:
+    #                 minDif = absDiff
+    #                 finalQuery= newQuery
+    #         else:
+    #             cond = self.constructCondition(condition)
+    #             print(cond)
+    #             newQuery = selectPart + "where " + cond
+    #             results = len(self.getTuples(newQuery))
+    #             absDiff = number - results
+    #             if minDif > absDiff:
+    #                 minDif = absDiff
+    #                 finalQuery = cond
+    #
+    #     return finalQuery
 
 
 
