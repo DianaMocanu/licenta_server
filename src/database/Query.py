@@ -33,6 +33,22 @@ class Query:
         result = self.cursor.fetchall()
         return result
 
+    def constructQueryWithoutId(self):
+        lower_query = self.query.lower()
+        idx = lower_query.index("from")
+        whereIdx = lower_query.index('where')
+        table = self.query[idx + 4: whereIdx]
+        columns = ("show columns from " + table)
+        self.cursor.execute(columns)
+        result = []
+        for (columns) in self.cursor:
+            if columns[0] != 'id':
+                result.append(columns[0])
+
+        columnsString = ' ,'.join(result)
+        query = 'select ' + columnsString + " from " + table + ' ' + self.query[whereIdx: ]
+        return Query(self.database, query)
+
 
     def executeQueryOnlyId(self):
         lower_query = self.query.lower()

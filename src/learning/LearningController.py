@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.tree import _tree
+import numpy as np
+from sklearn.impute import SimpleImputer
 
 
 class LearningController:
@@ -19,6 +21,8 @@ class LearningController:
     def initialize(self):
         estimator = DecisionTreeClassifier(max_leaf_nodes=20, random_state=0)
         plt.figure()
+        # imp = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+        # x_data = imp.fit_transform(self.data)
         estimator.fit(self.data, self.target)
         plot_tree(estimator, filled=True)
         plt.show()
