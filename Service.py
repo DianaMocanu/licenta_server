@@ -3,6 +3,7 @@ from flask import request
 from src.Controller import Controller
 from flask_cors import CORS, cross_origin
 from mysql.connector import Error
+import time
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -24,9 +25,12 @@ def generateQuery():
     database = Data['database']
     query = Data['query']
     negation = Data['negation']
+    rate = Data['rate']
     try:
-        result, oldSize = service.getQueryAlternativeConditions(query, database, negation)
-        dataToSend = {'results': result, 'oldSize': oldSize}
+        start_time = time.time()
+        result, positive_ids= service.getQueryAlternativeConditions(query, database, negation, rate)
+        dataToSend = {'results': result, 'pos_ids': positive_ids}
+        print("--- %s seconds ---" % (time.time() - start_time))
         response = jsonify(dataToSend)
         return response
     except Error as n:
@@ -49,6 +53,20 @@ def executeQuery():
     except Error as n:
         return n.msg, 209
 
+@app.route('/executeId', methods=['POST'])
+@cross_origin()
+def executeQueryId():
+    request_json = request.get_json()
+    Data = request_json['Data']
+    database = Data['database']
+    query = Data['query']
+    try:
+        result = service.executeQueryId(query, database)
+        dataToSend = {'results': result}
+        response = jsonify(dataToSend)
+        return response
+    except Error as n:
+        return n.msg, 209
 
 @app.route('/tables', methods=['GET', 'POST'])
 @cross_origin()
@@ -73,6 +91,21 @@ def getColumns():
     database = Data['database']
     try:
         result = service.getColumns(database, table)
+        response = jsonify(result)
+        return response
+    except Error as n:
+        return n.msg, 209
+
+@app.route('/maxMin', methods=['GET', 'POST'])
+@cross_origin()
+def getMinMax():
+    request_json = request.get_json()
+    Data = request_json['Data']
+    table = Data['table']
+    database = Data['database']
+    column = Data['column']
+    try:
+        result = service.getMinMaxColumn(database, table, column)
         response = jsonify(result)
         return response
     except Error as n:

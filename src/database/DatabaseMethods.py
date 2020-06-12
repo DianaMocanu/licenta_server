@@ -38,3 +38,12 @@ class DatabaseMethods:
         for (databases) in cursor:
             result.append(databases[0])
         return result
+
+    def getMinMaxColumn(self, database, column, table):
+        conn = mysql.connector.connect(user=self.user, password=self.password,
+                                       host='localhost', database=database, buffered=True)
+        cursor = conn.cursor()
+        databases = ("select min( " + column + ') as minValue, max( '+ column + ') as maxVal from ' + table)
+        cursor.execute(databases)
+        return(cursor.fetchone())
+
