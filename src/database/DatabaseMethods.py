@@ -21,22 +21,22 @@ class DatabaseMethods:
         conn = mysql.connector.connect(user=self.user, password=self.password,
                                        host='localhost', database= database, buffered=True)
         cursor = conn.cursor()
-        databases = ("show tables")
-        cursor.execute(databases)
+        tables = ("show tables")
+        cursor.execute(tables)
         result = []
-        for (databases) in cursor:
-            result.append(databases[0])
+        for (tables) in cursor:
+            result.append(tables[0])
         return result
 
     def getColumns(self, database, table):
         conn = mysql.connector.connect(user=self.user, password=self.password,
                                        host='localhost', database= database, buffered=True)
         cursor = conn.cursor()
-        databases = ("show columns from " + table)
-        cursor.execute(databases)
+        columns = ("show columns from " + table)
+        cursor.execute(columns)
         result = []
-        for (databases) in cursor:
-            result.append(databases[0])
+        for (columns) in cursor:
+            result.append(columns[0])
         return result
 
     def getMinMaxColumn(self, database, column, table):

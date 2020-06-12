@@ -18,7 +18,6 @@ class Query:
         self.connect()
 
     def connect(self):
-        # try:
         self.connection = connector.connect(host='localhost',
                                             database=self.database,
                                             user=self.user,
@@ -27,21 +26,10 @@ class Query:
 
         self.cursor = self.connection.cursor()
 
-    # except Error as e:
-    #     print("Error while connecting to MySQL", e)
-
     def executeQuery(self):
-        # try:
-
 
         self.cursor.execute(self.query)
         self.field_names = [i[0] for i in self.cursor.description]
-        # result = []
-        # i=0
-        # for row in self.cursor:
-        #     result.append(row)
-        #     print(i)
-        #     i+=1
         result = self.cursor.fetchall()
         return result
 
@@ -61,7 +49,6 @@ class Query:
     def negateQueryRandom(self, number, i, total_size):
         selectPart, wherePart = self.deconstructQuery()
         n = i / 100 * (total_size - number)
-        # n = number
         randPart = "ORDER BY RAND() LIMIT " + str(int(round(n)))
         newQuery = selectPart + " not( " + wherePart + " )" + randPart
         result = self.getTuples(newQuery)

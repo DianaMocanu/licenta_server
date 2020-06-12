@@ -27,7 +27,6 @@ class DataController:
         else:
             negative_result = query.negateQueryCombinationsN(positive_length)
 
-        # negative_ids =  [item[-1] for item in negative_result]
         positive_ids = [item[-1] for item in positive_result]
         negative_length = len(negative_result)
         print("Negate size: " + str(negative_length) + " Positive size: " + str(positive_length))
