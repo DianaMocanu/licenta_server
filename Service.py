@@ -5,11 +5,13 @@ from flask_cors import CORS, cross_origin
 from mysql.connector import Error
 import time
 
+from src.QueryValidator import QueryValidator
+
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app, resources=r'/*', headers='Content-Type')
 service = Controller()
-
+validator = QueryValidator()
 
 @app.before_request
 def oauth_verify(*args, **kwargs):
@@ -27,6 +29,9 @@ def generateQuery():
     negation = Data['negation']
     rate = Data['rate']
     try:
+        isValidated, message = validator.checkIntegralQuery(query)
+        if not isValidated:
+            return message, 209
         start_time = time.time()
         result, positive_ids= service.getQueryAlternativeConditions(query, database, negation, rate)
         dataToSend = {'results': result, 'pos_ids': positive_ids}
@@ -45,6 +50,9 @@ def executeQuery():
     database = Data['database']
     query = Data['query']
     try:
+        isValidated, message = validator.checkExecuteQuery(query)
+        if not isValidated:
+            return message, 209
         result, columns = service.executeQuery(query, database)
         print("Result size" + str(len(result)))
         dataToSend = {'results': result, 'columns': columns}
