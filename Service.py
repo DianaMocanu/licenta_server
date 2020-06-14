@@ -4,7 +4,6 @@ from src.Controller import Controller
 from flask_cors import CORS, cross_origin
 from mysql.connector import Error
 import time
-
 from src.QueryValidator import QueryValidator
 
 app = Flask(__name__)

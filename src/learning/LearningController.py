@@ -19,7 +19,7 @@ class LearningController:
         self.restTuples = rest
 
     def initialize(self):
-        estimator = DecisionTreeClassifier(max_leaf_nodes=20, random_state=0)
+        estimator = DecisionTreeClassifier(max_leaf_nodes=5, random_state=21)
         plt.figure()
         # imp = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
         # x_data = imp.fit_transform(self.data)
@@ -40,26 +40,23 @@ class LearningController:
         if self.tree.feature[node] != _tree.TREE_UNDEFINED:
             name = self.feature_name[node]
             threshold = self.tree.threshold[node]
-            newCond = condition + " and {} <= {}".format(name, threshold)
-            self.recurse2(self.tree.children_left[node], depth + 1, newCond)
-            condition += " and {} > {}".format(name, threshold)
-            self.recurse2(self.tree.children_right[node], depth + 1, condition)
+            self.recurse2(self.tree.children_left[node], depth + 1, f'{condition} and {name} <= {threshold}')
+            self.recurse2(self.tree.children_right[node], depth + 1,  f'{condition} and {name} > {threshold}')
 
         else:
             value = self.tree.value[node]
             maxValueIdx = value.argmax(axis=1)
-            node_class = self.target_name[maxValueIdx[0]]
+            # node_class = self.target_name[maxValueIdx[0]]
             if (maxValueIdx[0] == 0):
+                # print(condition)
                 condition = condition[len(" and"):]
                 self.conditions.append(condition)
+                # print(self.conditions)
 
     def calculateCondition(self, conditions):
-        final_condition = ""
-        for c in conditions:
-            if (len(final_condition) > 0):
-                final_condition += " or (" + c + ")"
-            else:
-                final_condition += "(" + c + ")"
+        final_condition = " or".join([
+            f'( {c} )' for c in conditions
+        ])
         return final_condition
 
     def generateConditionsQuery(self):

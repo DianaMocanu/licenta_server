@@ -1,11 +1,13 @@
-# import mysql.connector
+import time
+
 from mysql import connector
-# from mysql.connector import Error
 import numpy as np
 import re
-# import pymysql
-from itertools import combinations
-from itertools import combinations_with_replacement
+
+from sklearn.externals._arff import xrange
+
+from src.QueryValidator import QueryValidator
+
 
 class Query:
 
@@ -34,27 +36,23 @@ class Query:
         return result
 
     def constructQueryWithoutId(self):
-        lower_query = self.query.lower()
-        idx = lower_query.index("from")
-        whereIdx = lower_query.index('where')
+        lowerQuery = self.query.lower()
+        idx = lowerQuery.index("from")
+        whereIdx = lowerQuery.index('where')
         table = self.query[idx + 4: whereIdx]
-        columns = ("show columns from " + table)
+        columns = f'show columns from {table}'
         self.cursor.execute(columns)
-        result = []
-        for (columns) in self.cursor:
-            if columns[0] != 'id':
-                result.append(columns[0])
-
+        result = [columns[0] for (columns) in self.cursor if columns[0] != 'id']
         columnsString = ' ,'.join(result)
-        query = 'select ' + columnsString + " from " + table + ' ' + self.query[whereIdx: ]
+        query = f'select {columnsString} from {table} {self.query[whereIdx:]}'
         return Query(self.database, query)
 
 
     def executeQueryOnlyId(self):
-        lower_query = self.query.lower()
-        idx = lower_query.index("from")
+        lowerQuery  = self.query.lower()
+        idx = lowerQuery .index("from")
         fromPart = self.query[idx:]
-        query = 'select id ' + fromPart
+        query = f'select id {fromPart}'
         self.cursor.execute(query)
         result = []
         for (databases) in self.cursor:
@@ -65,14 +63,16 @@ class Query:
     def negateQueryRandom(self, number, i, total_size):
         selectPart, wherePart = self.deconstructQuery()
         n = i / 100 * (total_size - number)
-        randPart = "ORDER BY RAND() LIMIT " + str(int(round(n)))
-        newQuery = selectPart + " not( " + wherePart + " )" + randPart
+        randPart = f'ORDER BY RAND() LIMIT  {str(int(round(n)))}'
+        newQuery = f'{selectPart} not( {wherePart} ) {randPart}'
         result = self.getTuples(newQuery)
         return result
 
 
     def negateQueryCombinationsN(self, number):
         selectPart, wherePart = self.deconstructQuery()
+        # ands =  [i.start() for i in re.finditer('', wherePart)]
+        # ors = [i.start() for i in re.finditer('or', wherePart)]
         conditions = re.split("and | or", wherePart)
         return self.condCombN(conditions, selectPart, number)
 
@@ -87,22 +87,24 @@ class Query:
         minDif = np.Inf
         resultedTuples = []
         for i in range(1, np.power(2,n)):
-            negatedCondition = []
+            # negatedCondition = []
             b = '{0:b}'.format(i)
             binaryNumber = b.zfill(n)
             binary = [int(x) for x in list(binaryNumber)]
-            for i in range(0, n):
-                digit = binary[i]
-                if  digit:
-                    negatedCondition.append(" not( " + conditions[i] +")")
-                else:
-                    negatedCondition.append(conditions[i])
+            negatedCondition = [f' not( {conditions[i]} )' if binary[i] else conditions[i] for i in xrange(0,n)]
+            # for i in range(0, n):
+            #     digit = binary[i]
+            #     if  digit:
+            #         negatedCondition.append(f' not( {conditions[i]} )')
+            #     else:
+            #         negatedCondition.append(conditions[i])
 
-            newCond = self.constructCondition(negatedCondition)
-            newQuery = selectPart + " " + newCond
+            newCond = ' and'.join(negatedCondition)
+            newQuery = f'{selectPart} {newCond}'
             tuples = self.getTuples(newQuery)
-            difference = abs(length - len(tuples))
-            if difference < minDif and len(tuples) > 0:
+            tuplesLength = len(tuples)
+            difference = abs(length - tuplesLength)
+            if tuplesLength and difference < minDif:
                 minDif = difference
                 resultedTuples = tuples
 
@@ -115,8 +117,8 @@ class Query:
 
 
     def deconstructQuery(self):
-        lower_query = self.query.lower()
-        idx = lower_query.index("where")
+        lowerQuery  = self.query.lower()
+        idx = lowerQuery .index("where")
         selectPart = self.query[:idx + 5]
         wherePart = self.query[idx + 5:]
         return selectPart, wherePart

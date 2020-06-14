@@ -43,7 +43,7 @@ class DatabaseMethods:
         conn = mysql.connector.connect(user=self.user, password=self.password,
                                        host='localhost', database=database, buffered=True)
         cursor = conn.cursor()
-        databases = ("select min( " + column + ') as minValue, max( '+ column + ') as maxVal from ' + table)
+        databases = (f'select min( {column} ) as minValue, max( {column} ) as maxVal from {table}')
         cursor.execute(databases)
         return(cursor.fetchone())
 

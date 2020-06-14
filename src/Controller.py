@@ -10,14 +10,12 @@ class Controller:
     def __init__(self):
         self.connectService = DataController()
         self.databaseManager = DatabaseMethods()
-        self.size_iris = 245
 
 
     def getQueryAlternativeConditions(self, query, database, negation, rate):
         queryNew = Query(database, query)
         X, result, pos_ids = self.connectService.createLearningSets(queryNew, negation, rate)
         tags =np.array(self.connectService.tags)
-        # rest = np.array(self.connectService.getNextNegated(query, database))
         target_names = [0,1]
         feature_names = self.connectService.field_names
         learningService = LearningController(X, tags, feature_names, target_names, np.array(result))
